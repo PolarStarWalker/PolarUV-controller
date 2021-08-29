@@ -1,6 +1,6 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration name="OCD controller" type="com.jetbrains.cidr.embedded.openocd.conf.type" factoryName="com.jetbrains.cidr.embedded.openocd.conf.factory" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="controller" TARGET_NAME="controller.elf" version="1" RUN_TARGET_PROJECT_NAME="controller" RUN_TARGET_NAME="controller.elf">
-    <openocd version="1" gdb-port="3333" telnet-port="4444" board-config="D:\STM32\controller\xmos_xk-xac-xa8_arm.cfg" reset-type="INIT" download-type="UPDATED_ONLY">
+  <configuration default="false" name="OCD controller" type="com.jetbrains.cidr.embedded.openocd.conf.type" factoryName="com.jetbrains.cidr.embedded.openocd.conf.factory" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="controller" TARGET_NAME="controller.elf" CONFIG_NAME="Debug-QtCmake" version="1" RUN_TARGET_PROJECT_NAME="controller" RUN_TARGET_NAME="controller.elf">
+    <openocd version="1" gdb-port="3333" telnet-port="4444" board-config="D:\STM32\controller\stm32h7x3i_eval.cfg" reset-type="INIT" download-type="UPDATED_ONLY">
       <debugger kind="GDB" isBundled="true" />
     </openocd>
     <method v="2">

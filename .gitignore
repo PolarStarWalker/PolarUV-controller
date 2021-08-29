@@ -69,7 +69,10 @@ Thumbs.db
 # Binaries
 # --------
 *.elf
+*.bin
+*.hex
 
 /cmake-build-release-qtcmake/
 /cmake-build-debug-qtcmake/
-
+/cmake-build-minsizerel-qtcmake/
+/cmake-build-relwithdebinfo/
