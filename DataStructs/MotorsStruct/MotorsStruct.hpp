@@ -15,7 +15,7 @@ struct MotorsStruct {
     ///or
     ///{PA8,   PA9,   PA10,  PA11,  PA15,  PB3,   PB0,   PB6,   PB7,   PA0,   PA1,   PA3}
 
-    uint16_t PacketArray[12] = {};
+    uint16_t PacketArray[12] = {1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000};
 
     ///DShotMode applies to the entire timer,
     ///it changes the operation of all channels of one timer
@@ -26,7 +26,7 @@ struct MotorsStruct {
 extern MotorsStruct MotorsStructData;
 constexpr size_t MotorsStructArrayLength = sizeof(MotorsStructData.PacketArray);
 constexpr size_t MotorsStructLen = sizeof(MotorsStructData);
-constexpr size_t MotorsStructLenMessage = MotorsStructLen + 2;
+constexpr size_t MotorsStructLenMessage = MotorsStructLen + 4;
 
 //std::ostream &operator<<(std::ostream &s, const MotorsStruct &c);
 #endif
