@@ -207,10 +207,10 @@ int main(void)
             TIM4->CCR3 = motorsStructData.PacketArray[10] * 6 + 9000;
             TIM4->CCR4 = motorsStructData.PacketArray[11] * 6 + 9000;
 
-            TIM2->CCR1 = motorsStructData.PWM[0] * 10;
-            TIM2->CCR2 = motorsStructData.PWM[1] * 10;
-            TIM2->CCR3 = motorsStructData.PWM[2] * 10;
-            TIM2->CCR4 = motorsStructData.PWM[3] * 10;
+            TIM2->CCR1 = motorsStructData.PWM[0];
+            TIM2->CCR2 = motorsStructData.PWM[1];
+            TIM2->CCR3 = motorsStructData.PWM[2];
+            TIM2->CCR4 = motorsStructData.PWM[3];
 
             TicCount = 0;
         }
