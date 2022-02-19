@@ -27,14 +27,14 @@ add_link_options(-mfloat-abi=hard -mfpu=fpv4-sp-d16)
 #add_compile_options(-mfloat-abi=soft)
 
 add_compile_options(-mcpu=cortex-m7 -mthumb -mthumb-interwork)
-add_compile_options(-ffunction-sections -fdata-sections -fno-common -fmessage-length=0)
+add_compile_options(-ffunction-sections -flto -fdata-sections -fno-common -fmessage-length=0)
 
 # uncomment to mitigate c++17 absolute addresses warnings
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-register")
 
 if ("${CMAKE_BUILD_TYPE}" STREQUAL "Release")
     message(STATUS "Maximum optimization for speed")
-    add_compile_options(-Ofast)
+    add_compile_options(-O3)
 elseif ("${CMAKE_BUILD_TYPE}" STREQUAL "RelWithDebInfo")
     message(STATUS "Maximum optimization for speed, debug info included")
     add_compile_options(-Ofast -g)
