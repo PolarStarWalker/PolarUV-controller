@@ -27,9 +27,9 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 //#include "usbd_cdc_if.h"
-#include "MotorsStruct/MotorsStruct.hpp"
-#include <cstring>
-#include <atomic>
+
+#include "Motors.hpp"
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -56,13 +56,11 @@
 void SystemClock_Config(void);
 /* USER CODE BEGIN PFP */
 
-constexpr uint16_t NEUTRAL = 1000 * 6;
-
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-std::atomic<int> TicCount = 0;
+int TicCount = 0;
 
 enum SPIStatus {
     OFF = 0,
@@ -83,26 +81,26 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
     }
 }
 
-uint16_t CreatePacket(uint16_t gas, bool isNeedTelemetry) {
-    uint16_t packet = gas + 47;
+//uint16_t CreatePacket(uint16_t gas, bool isNeedTelemetry) {
+//    uint16_t packet = gas + 47;
+//
+//    packet <<= 1;
+//
+//    if (isNeedTelemetry)
+//        ++packet;
+//
+//    int csum = 0;
+//    int csum_data = packet;
+//    for (int i = 0; i < 3; i++) {
+//        csum ^= csum_data; // xor data by nibbles
+//        csum_data >>= 4;
+//    }
+//    csum &= 0xf;
+//    // append checksum
+//    return (packet << 4) | csum;
+//}
 
-    packet <<= 1;
 
-    if (isNeedTelemetry)
-        ++packet;
-
-    int csum = 0;
-    int csum_data = packet;
-    for (int i = 0; i < 3; i++) {
-        csum ^= csum_data; // xor data by nibbles
-        csum_data >>= 4;
-    }
-    csum &= 0xf;
-    // append checksum
-    return (packet << 4) | csum;
-}
-
-[[noreturn]]
 /* USER CODE END 0 */
 
 /**
@@ -142,99 +140,42 @@ int main(void)
   MX_TIM5_Init();
   /* USER CODE BEGIN 2 */
 
-    HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_1);
-    HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_2);
-    HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_3);
-    HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_4);
+    SetUpTimers();
 
-    HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_1);
-    HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_2);
-    HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_3);
-    HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_4);
-
-    HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_1);
-    HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_2);
-    HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_3);
-    HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_4);
-
-    HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_1);
-    HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_2);
-    HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_3);
-    HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_4);
-
-    HAL_TIM_Base_Start_IT(&htim5);
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
 
+    struct MotorMessageStruct* motorMessage  = GetMotorsStructBuffer();
+    size_t motorMessageSize = GetMotorsMessageSize();
 
-    uint8_t msg[MotorsStructLenMessage * 2]{};
-
-    HAL_SPI_Receive_IT(&hspi1, msg, MotorsStructLenMessage * 2);
+    HAL_SPI_Receive_IT(&hspi1, (uint8_t*) motorMessage, motorMessageSize);
 
     for (;;) {
 
-        MotorsStruct motorsStructData;
-
         if (SPIOneStatus != DONE) {
-            HAL_SPI_Receive_IT(&hspi1, msg, MotorsStructLenMessage * 2);
+            HAL_SPI_Receive_IT(&hspi1, motorMessage, motorMessageSize);
         }
 
         if (SPIOneStatus == DONE) {
 
             SPIOneStatus = OFF;
 
-            for (size_t i = 0; i < MotorsStructLenMessage; i++) {
-                if (msg[i] == 's' && msg[i + 1] == 's' && msg[i + 2] == 's' && msg[i + 3] == 's') {
-                    memcpy(&motorsStructData, &msg[i + 4], MotorsStructLen);
-                    i = MotorsStructLenMessage * 2;
-                }
+            struct MotorsStruct* motors = Parse(motorMessage);
+
+            if(motors) {
+
+                SetMotors(motors);
+                SetPWM(motors);
+
+                TicCount = 0;
             }
-
-            TIM1->CCR1 = motorsStructData.PacketArray[0] * 6 + 9000;
-            TIM1->CCR2 = motorsStructData.PacketArray[1] * 6 + 9000;
-            TIM1->CCR3 = motorsStructData.PacketArray[2] * 6 + 9000;
-            TIM1->CCR4 = motorsStructData.PacketArray[3] * 6 + 9000;
-
-            TIM3->CCR1 = motorsStructData.PacketArray[4] * 6 + 9000;
-            TIM3->CCR2 = motorsStructData.PacketArray[5] * 6 + 9000;
-            TIM3->CCR3 = motorsStructData.PacketArray[6] * 6 + 9000;
-            TIM3->CCR4 = motorsStructData.PacketArray[7] * 6 + 9000;
-
-            TIM4->CCR1 = motorsStructData.PacketArray[8] * 6 + 9000;
-            TIM4->CCR2 = motorsStructData.PacketArray[9] * 6 + 9000;
-            TIM4->CCR3 = motorsStructData.PacketArray[10] * 6 + 9000;
-            TIM4->CCR4 = motorsStructData.PacketArray[11] * 6 + 9000;
-
-            TIM2->CCR1 = motorsStructData.PWM[0];
-            TIM2->CCR2 = motorsStructData.PWM[1];
-            TIM2->CCR3 = motorsStructData.PWM[2];
-            TIM2->CCR4 = motorsStructData.PWM[3];
-
-            TicCount = 0;
         }
 
         if (TicCount == 500) {
-            TIM1->CCR1 = NEUTRAL + 9000;
-            TIM1->CCR2 = NEUTRAL + 9000;
-            TIM1->CCR3 = NEUTRAL + 9000;
-            TIM1->CCR4 = NEUTRAL + 9000;
-
-            TIM3->CCR1 = NEUTRAL + 9000;
-            TIM3->CCR2 = NEUTRAL + 9000;
-            TIM3->CCR3 = NEUTRAL + 9000;
-            TIM3->CCR4 = NEUTRAL + 9000;
-
-            TIM4->CCR1 = NEUTRAL + 9000;
-            TIM4->CCR2 = NEUTRAL + 9000;
-            TIM4->CCR3 = NEUTRAL + 9000;
-            TIM4->CCR4 = NEUTRAL + 9000;
-
-            TIM2->CCR1 = 0;
-            TIM2->CCR2 = 0;
-            TIM2->CCR3 = 0;
-            TIM2->CCR4 = 0;
+            StopMotors();
+            StopPWM();
         }
 
     /* USER CODE END WHILE */
