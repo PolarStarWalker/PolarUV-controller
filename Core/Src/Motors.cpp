@@ -12,7 +12,6 @@ static TimersStruct Timers;
 
 static MotorMessageStruct MotorMessage;
 
-
 /*********************FUNCRIONS************************/
 extern "C" {
 
@@ -43,7 +42,7 @@ void SetUpTimers() {
     HAL_TIM_Base_Start_IT(&htim5);
 }
 
-struct MotorMessageStruct *GetMotorsStructBuffer() {
+struct MotorMessageStruct *GetMotorsMessageBuffer() {
     return &MotorMessage;
 }
 
@@ -51,23 +50,28 @@ size_t GetMotorsMessageSize() {
     return MotorMessageStruct::MotorsMessageLen;
 }
 
-struct MotorsStruct *Parse(const struct MotorMessageStruct* motorsMessage) {
-    return motorsMessage->Parse(&Motors);
+struct MotorsStruct *GetMotorsStruct(){
+    return &Motors;
+}
+
+size_t Parse(const struct MotorMessageStruct* motorsMessage, struct MotorsStruct* motorsStruct) {
+    return motorsMessage->Parse(motorsStruct);
+}
+
+void CleanMotorsStruct(struct MotorsStruct* motorsStruct){
+    for(size_t i =0; i < MotorsSize; ++i)
+        motorsStruct->PacketArray[i] = 1000;
+
+    for(size_t i =0; i < PWMSize; ++i)
+        motorsStruct->PWM[i] = 0;
+
 }
 
 void SetMotors(const MotorsStruct *motors) {
-    Timers.SetPWM(motors);
-}
-
-void SetPWM(const MotorsStruct *motors) {
     Timers.SetMotors(motors);
 }
 
-void StopMotors() {
-    Timers.StopMotors();
-}
-
-void StopPWM() {
-    Timers.StopPWM();
+void SetPWM(const MotorsStruct *motors) {
+    Timers.SetPWM(motors);
 }
 }

@@ -4,6 +4,7 @@
 #include "tim.h"
 #include <array>
 #include <cstring>
+#include <algorithm>
 
 constexpr uint32_t neutral = 1000;
 
@@ -25,7 +26,9 @@ struct MotorsStruct {
         DShot1200 = 8
     };
 
-    MotorsArray<uint16_t> PacketArray = {1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000};
+    MotorsArray<uint16_t> PacketArray = {1000, 1000, 1000, 1000,
+                                         1000, 1000, 1000, 1000,
+                                         1000, 1000, 1000, 1000};
 
     PWMArray<uint16_t> PWM = {};
 
@@ -34,28 +37,28 @@ struct MotorsStruct {
 };
 
 
-struct MotorMessageStruct{
+struct MotorMessageStruct {
 
     static constexpr size_t MotorsStructLen = sizeof(MotorsStruct);
     static constexpr size_t MotorsMessageLen = 2 * (sizeof(MotorsStruct) + 4);
 
-    inline MotorsStruct* Parse(MotorsStruct* motors)  const {
+    inline bool Parse(MotorsStruct *motors) const {
 
-        for (size_t i = 0; i < MotorsMessageLen; i++) {
+        for (size_t i = 0; i < MotorsMessageLen / 2; i++) {
             if (buffer_[i] == 's' && buffer_[i + 1] == 's' && buffer_[i + 2] == 's' && buffer_[i + 3] == 's') {
                 memcpy(motors, &buffer_[i + 4], MotorsStructLen);
-                return motors;
+                return true;
             }
         }
 
-        return nullptr;
+        return false;
     }
 
 private:
     std::array<uint8_t, MotorsMessageLen> buffer_;
-
-
 };
+
+
 
 
 struct TimersStruct {
@@ -72,16 +75,6 @@ struct TimersStruct {
             *(PWMTimers[i]) = motors->PWM[i];
     }
 
-    inline void StopMotors(){
-        for (size_t i = 0; i < MotorsSize; i++)
-            *(MotorTimers[i]) = CalculateTickValue(neutral);
-    }
-
-    inline void StopPWM(){
-        for (size_t i = 0; i < PWMSize; i++)
-            *(PWMTimers[i]) = 0;
-    }
-
     static inline uint32_t CalculateTickValue(uint32_t gas) {
         return gas * 6 + 9000;
     }
@@ -92,8 +85,17 @@ private:
                                              &(TIM3->CCR1), &(TIM3->CCR2), &(TIM3->CCR3), &(TIM3->CCR4),
                                              &(TIM4->CCR1), &(TIM4->CCR2), &(TIM4->CCR3), &(TIM4->CCR4)};
 
-    MotorsArray<float> Velocity{};
-    MotorsArray<float> Acceleration{};
+    MotorsArray<float> CurrentTimer{neutral, neutral, neutral, neutral,
+                                    neutral, neutral, neutral, neutral,
+                                    neutral, neutral, neutral, neutral};
+
+    MotorsArray<float> CurrentVelocity{0, 0, 0, 0,
+                                       0, 0, 0, 0,
+                                       0, 0, 0, 0};
+
+    MotorsArray<float> CurrentAcceleration{0, 0, 0, 0,
+                                           0, 0, 0, 0,
+                                           0, 0, 0, 0};
 
     PWMArray<__IO uint32_t *> PWMTimers{&(TIM2->CCR1), &(TIM2->CCR2), &(TIM2->CCR3), &(TIM2->CCR4)};
 };

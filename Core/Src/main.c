@@ -81,25 +81,6 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
     }
 }
 
-//uint16_t CreatePacket(uint16_t gas, bool isNeedTelemetry) {
-//    uint16_t packet = gas + 47;
-//
-//    packet <<= 1;
-//
-//    if (isNeedTelemetry)
-//        ++packet;
-//
-//    int csum = 0;
-//    int csum_data = packet;
-//    for (int i = 0; i < 3; i++) {
-//        csum ^= csum_data; // xor data by nibbles
-//        csum_data >>= 4;
-//    }
-//    csum &= 0xf;
-//    // append checksum
-//    return (packet << 4) | csum;
-//}
-
 
 /* USER CODE END 0 */
 
@@ -147,10 +128,13 @@ int main(void)
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
 
-    struct MotorMessageStruct* motorMessage  = GetMotorsStructBuffer();
+    struct MotorMessageStruct* motorMessage  = GetMotorsMessageBuffer();
     size_t motorMessageSize = GetMotorsMessageSize();
 
+
     HAL_SPI_Receive_IT(&hspi1, (uint8_t*) motorMessage, motorMessageSize);
+
+    struct MotorsStruct* motorsStruct = GetMotorsStruct();
 
     for (;;) {
 
@@ -162,21 +146,17 @@ int main(void)
 
             SPIOneStatus = OFF;
 
-            struct MotorsStruct* motors = Parse(motorMessage);
+            size_t isParsed = Parse(motorMessage, motorsStruct);
 
-            if(motors) {
-
-                SetMotors(motors);
-                SetPWM(motors);
-
+            if(isParsed)
                 TicCount = 0;
-            }
         }
 
-        if (TicCount == 500) {
-            StopMotors();
-            StopPWM();
-        }
+        if (TicCount == 500)
+            CleanMotorsStruct(motorsStruct);
+
+        SetPWM(motorsStruct);
+        SetMotors(motorsStruct);
 
     /* USER CODE END WHILE */
 

@@ -10,18 +10,17 @@ struct MotorMessageStruct;
 
 void SetUpTimers();
 
-struct MotorMessageStruct* GetMotorsStructBuffer();
+struct MotorMessageStruct* GetMotorsMessageBuffer();
+size_t GetMotorsMessageSize();
 
-struct MotorsStruct *Parse(const struct MotorMessageStruct* motorsMessage);
+struct MotorsStruct *GetMotorsStruct();
+
+size_t Parse(const struct MotorMessageStruct* motorsMessage, struct MotorsStruct* motorsStruct);
 
 void SetMotors(const struct MotorsStruct* motors);
 
 void SetPWM(const struct MotorsStruct* motors);
 
-void StopMotors();
-
-void StopPWM();
-
-size_t GetMotorsMessageSize();
+void CleanMotorsStruct(struct MotorsStruct* motorsStruct);
 
 #endif
